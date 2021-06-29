@@ -1,7 +1,8 @@
 
 from intelhex import IntelHex
 
-
+BINFILE_PAGE_SIZE = 256
+BINFILE_ADR_IDENT = 512
 FLASH_START_ADDRESS = 0x8000000
 FLASH_END_ADDRESS = 0x8040000
 EXTRAM_START_ADDRESS = 0x20000000
@@ -10,7 +11,7 @@ SDRAM_START_ADDRESS = 0xC0200000
 SDRAM_END_ADDRESS = 0xC0400000
 
 if __name__ == '__main__':
-    ih = IntelHex();
+    ih = IntelHex()
     ih.loadhex('Alpha_bootloader.hex')
 
     #  print(ih.addresses())
@@ -40,6 +41,9 @@ if __name__ == '__main__':
     for i in range(flash_end_address - FLASH_START_ADDRESS):
         k = ih[FLASH_START_ADDRESS + i]
         fileFlash.write(bytes([k]))
+        if i < (BINFILE_ADR_IDENT + BINFILE_PAGE_SIZE):
+            fileExtram.write(bytes([k]))
+            fileSdram.write(bytes([k]))
     for i in range(extram_end_address - EXTRAM_START_ADDRESS):
         k = ih[EXTRAM_START_ADDRESS + i]
         fileExtram.write(bytes([k]))

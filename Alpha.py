@@ -1,7 +1,8 @@
 
 from intelhex import IntelHex
 
-
+BINFILE_PAGE_SIZE = 256
+BINFILE_ADR_IDENT = 512
 FLASH_START_ADDRESS = 0x8000000
 FLASH_END_ADDRESS = 0x80C0000
 QSPI_START_ADDRESS = 0x90000000
@@ -9,7 +10,7 @@ QSPI_END_ADDRESS = 0x92000000
 
 
 if __name__ == '__main__':
-    ih = IntelHex();
+    ih = IntelHex()
     ih.loadhex('Alpha.hex')
 
     #  print(ih.addresses())
@@ -31,10 +32,12 @@ if __name__ == '__main__':
             if qspi_end_address < x[1]:
                 qspi_end_address = x[1]
 
-    for i in range(flash_end_address - FLASH_START_ADDRESS):
+    for i in range(0, flash_end_address - FLASH_START_ADDRESS):
         k = ih[FLASH_START_ADDRESS + i]
         fileFlash.write(bytes([k]))
-    for i in range(qspi_end_address - QSPI_START_ADDRESS):
+        if i < (BINFILE_ADR_IDENT + BINFILE_PAGE_SIZE):
+            fileQspi.write(bytes([k]))
+    for i in range(0, qspi_end_address - QSPI_START_ADDRESS):
         k = ih[QSPI_START_ADDRESS + i]
         fileQspi.write(bytes([k]))
 
