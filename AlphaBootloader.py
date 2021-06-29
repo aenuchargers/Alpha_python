@@ -1,3 +1,4 @@
+
 from intelhex import IntelHex
 
 
@@ -16,9 +17,9 @@ if __name__ == '__main__':
 
     # i = ih.segments()
     # print(ih.segments())
-    fileFlash = open('flash.bin', 'wb')
-    fileExtram = open('extram.bin', 'wb')
-    fileSdram = open('sdram.bin', 'wb')
+    fileFlash = open('bflash.bin', 'wb')
+    fileExtram = open('bextram.bin', 'wb')
+    fileSdram = open('bsdram.bin', 'wb')
     flash_end_address = 0
     extram_end_address = 0
     sdram_end_address = 0
@@ -58,4 +59,3 @@ if __name__ == '__main__':
     print(hex(extram_end_address))
     print(hex(SDRAM_START_ADDRESS))
     print(hex(sdram_end_address))
-
