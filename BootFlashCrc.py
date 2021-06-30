@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # sys.exit(0)
 
     str_file_input = 'bflash.bin'
-    file_size = os.stat('bflash.bin')
+    file_size = os.stat(str_file_input)
     # print("Size of file :", file_size.st_size, "bytes")
     number_bytes = file_size.st_size
     hex_number_bytes = hex(number_bytes)
