@@ -71,7 +71,8 @@ if __name__ == '__main__':
     # print(len(buffer))
     # sys.exit(0)
 
-    file_size = os.stat('aqspi.bin')
+    str_file_input = 'aqspi.bin'
+    file_size = os.stat(str_file_input)
     # print("Size of file :", file_size.st_size, "bytes")
     number_bytes = file_size.st_size
     hex_number_bytes = hex(number_bytes)
@@ -79,54 +80,51 @@ if __name__ == '__main__':
         print("File - small size!")
         sys.exit(1)
 
-    file_input = open('aqspi.bin', 'rb')
+    file_input = open(str_file_input, 'rb')
     crc_file = 0xFFFF
     page_ident = 0
     string_version = ''
     while True:
-        if number_bytes >= BINFILE_PAGE_SIZE:
-            page_ident = page_ident + BINFILE_PAGE_SIZE
-            file_read = file_input.read(BINFILE_PAGE_SIZE)
-            number_bytes = number_bytes - BINFILE_PAGE_SIZE
-            # print(file_read)
-
+        if number_bytes > BINFILE_PAGE_SIZE:
             if page_ident == BINFILE_ADR_IDENT:
-                page_ident = page_ident + BINFILE_PAGE_SIZE
-                number_bytes = number_bytes - BINFILE_PAGE_SIZE
-                file_read = file_input.read(12)
+                file_read = file_input.read(BINFILE_SIZE_VERSION)
                 string_version = file_read.decode()
-                continue
+                file_read = file_input.read(BINFILE_PAGE_SIZE - BINFILE_SIZE_VERSION)
+            else:
+                file_read = file_input.read(BINFILE_PAGE_SIZE)
+                crc_file = crc16_bytes(crc_file, file_read)
+                # print(file_read)
 
-            crc_file = crc16_bytes(crc_file, file_read)
+            page_ident = page_ident + BINFILE_PAGE_SIZE
+            number_bytes = number_bytes - BINFILE_PAGE_SIZE
             continue
+        else:
+            break
 
-        file_read = file_input.read(number_bytes)
-        crc_file = crc16_bytes(crc_file, file_read)
-        file_input.close()
+    file_read = file_input.read(number_bytes)
+    crc_file = crc16_bytes(crc_file, file_read)
+    file_input.close()
 
-        hex_crc_file = hex(crc_file)
-        print(hex_crc_file)
-        print(hex_number_bytes)
+    hex_crc_file = hex(crc_file)
+    print(hex_crc_file)
+    print(hex_number_bytes)
 
-        break
-
-    file_size = os.stat('aqspi.bin')
+    file_size = os.stat(str_file_input)
     # print("Size of file :", file_size.st_size, "bytes")
     number_bytes = file_size.st_size
-    file_input = open('aqspi.bin', 'rb')
-    file_output = open(string_version + '_qspi' + '.bin', 'wb')
+    file_input = open(str_file_input, 'rb')
+    str_file_output = string_version + '_flash' + '.bin'
+    file_output = open(str_file_output, 'wb')
 
     page_ident = 0
     while True:
-        if number_bytes >= BINFILE_PAGE_SIZE:
+        if number_bytes > BINFILE_PAGE_SIZE:
             file_read = file_input.read(BINFILE_PAGE_SIZE)
-            number_bytes = number_bytes - BINFILE_PAGE_SIZE
 
             if page_ident == BINFILE_ADR_IDENT:
-                ident_number_bytes = BINFILE_PAGE_SIZE
                 file_output.write(string_version.encode())
-                file_output.write('    '.encode())
-                ident_number_bytes = ident_number_bytes - BINFILE_SIZE_VERSION
+                # file_output.write('    '.encode())
+                ident_number_bytes = BINFILE_PAGE_SIZE - BINFILE_SIZE_VERSION
                 file_output.write((crc_file & 0xFFFF).to_bytes(BINFILE_SIZE_CRC, byteorder="little"))
                 ident_number_bytes = ident_number_bytes - BINFILE_SIZE_CRC
                 file_output.write((file_size.st_size & 0xFFFFFFFF).to_bytes(BINFILE_SIZE_SIZE, byteorder="little"))
@@ -137,17 +135,16 @@ if __name__ == '__main__':
                 file_output.write(file_read)
 
             # print(file_read)
+            number_bytes = number_bytes - BINFILE_PAGE_SIZE
             page_ident = page_ident + BINFILE_PAGE_SIZE
-            continue
+        else:
+            break
 
-        file_read = file_input.read(number_bytes)
-        file_output.write(file_read)
-
-        break
+    file_read = file_input.read(number_bytes)
+    file_output.write(file_read)
 
     file_input.close()
     file_output.close()
 
-    # file_out = open('LogEvse.txt', 'a')
-
-
+    os.remove(str_file_input)
+    os.rename(str_file_output, str_file_input)
